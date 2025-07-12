@@ -136,7 +136,7 @@ class UsersService {
       avatar_url = image_url.Location;
       key = image_url.Key;
     }
-    const id = nanoid(16);
+    const id = `users-${nanoid(16)}`;
     const created_at = new Date().toISOString();
     const hashedPassword = await bcrypt.hash(password, 10);
     const query = await this._User.create({
@@ -179,7 +179,7 @@ class UsersService {
 
     const followers = await this._User
       .find({
-        username: { $in: query.followers },
+        _id: { $in: query.followers },
       })
       .select("username bio avatar_url");
 
@@ -190,7 +190,7 @@ class UsersService {
     }));
     const following = await this._User
       .find({
-        username: { $in: query.following },
+        _id: { $in: query.following },
       })
       .select("username bio avatar_url");
 
@@ -253,12 +253,12 @@ class UsersService {
     const targetUser = await this._User.findOne({ username: targetUsername });
     // add followers id to user target
     await this._User.findByIdAndUpdate(targetUser._id, {
-      $addToSet: { followers: followerUser.username },
+      $addToSet: { followers: followerUser._id },
     });
 
     // add following id to user
     await this._User.findByIdAndUpdate(followerUser._id, {
-      $addToSet: { following: targetUser.username },
+      $addToSet: { following: targetUser._id },
     });
   }
 }

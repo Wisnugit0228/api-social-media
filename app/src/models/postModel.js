@@ -30,6 +30,9 @@ const postsSchema = new mongoose.Schema({
   created_at: {
     type: String,
   },
+  updated_at: {
+    type: String,
+  },
   likes: [
     {
       type: String,
