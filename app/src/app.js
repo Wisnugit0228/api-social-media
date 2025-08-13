@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import { connectionDB } from "./db/dbConnections.js";
 import usersRouter from "./handler/usersHandler/routes.js";
 import postsRoute from "./handler/postsHandler/routes.js";
+import comentsRoutes from "./handler/Comenthandler/routes.js";
 
 dotenv.config();
 
@@ -13,7 +14,7 @@ app.use(express.json());
 app.use(
   cors({
     credentials: true,
-    origin: "*",
+    origin: "http://localhost:3000",
   })
 );
 app.use(cookieParser());
@@ -22,5 +23,6 @@ connectionDB();
 
 app.use(usersRouter);
 app.use(postsRoute);
+app.use(comentsRoutes);
 
-app.listen(3000, () => console.log("server running on port 3000"));
+app.listen(5000, () => console.log("server running on port 3000"));

@@ -4,8 +4,8 @@ export const usersSchema = Joi.object({
   username: Joi.string().required(),
   email: Joi.string().required(),
   password: Joi.string().required(),
-  bio: Joi.string().optional(),
-  avatar_url: Joi.optional(),
+  bio: Joi.optional(),
+  image: Joi.optional(),
 });
 
 export const loginUserSchema = Joi.object({

@@ -1,6 +1,7 @@
 import { nanoid } from "nanoid";
 import Posts from "../models/postModel.js";
 import Users from "../models/usersModel.js";
+import Coments from "../models/comentModel.js";
 import AWS from "aws-sdk";
 import { v4 as uuidv4 } from "uuid";
 
@@ -8,6 +9,7 @@ class PostsService {
   constructor() {
     this._Post = Posts;
     this._User = Users;
+    this._Coment = Coments;
   }
 
   async uploadImage(image) {
@@ -175,15 +177,49 @@ class PostsService {
       });
     });
 
-    return posts.map((post) => ({
-      content: post.content,
-      media_url: post.media_url,
-      tags: post.tags,
-      created_at: post.created_at,
-      total_like: post.likes.length,
-      likes: post.likes,
-      user_posted: userMap.get(post.user_id) || null,
-    }));
+    const result = await Promise.all(
+      posts.map(async (post) => {
+        const comments = await this._Coment
+          .find({
+            post_id: post._id,
+          })
+          .sort({ created_at: -1 });
+
+        const commenterIds = comments.map((c) => c.user_id);
+        const comenters = await this._User
+          .find({
+            _id: { $in: commenterIds },
+          })
+          .select("_id username avatar_url");
+
+        const comenterMap = new Map();
+        comenters.forEach((user) => {
+          comenterMap.set(user._id, {
+            username: user.username,
+            avatar_url: user.avatar_url,
+          });
+        });
+
+        const formattedComments = comments.map((comment) => ({
+          content: comment.content,
+          created_at: comment.created_at,
+          user: comenterMap.get(comment.user_id) || null,
+        }));
+
+        return {
+          content: post.content,
+          media_url: post.media_url,
+          tags: post.tags,
+          created_at: post.created_at,
+          total_like: post.likes.length,
+          likes: post.likes,
+          user_posting: userMap.get(post.user_id) || null,
+          comments: formattedComments,
+        };
+      })
+    );
+
+    return result;
   }
 }
 
